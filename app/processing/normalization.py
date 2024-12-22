@@ -33,7 +33,12 @@ def sum_kills_and_spread(pd_data: pd.DataFrame) -> pd.DataFrame:
     pd_data.drop(columns=["nkill", "nkillter", "nwound", "nwoundte"], inplace=True)
     return pd_data
 
-
+def convert_unknown_to_none(val):
+    if isinstance(val, str) and val in ["unknown", "Unknown", "none", "None"]:
+        return None
+    elif isinstance(val, float) and pd.isna(val):  # טיפול ב-NaN
+        return None
+    return val
 def normalization(pd_data: pd.DataFrame) -> pd.DataFrame:
     return pipe(
         pd_data,
@@ -47,6 +52,7 @@ def normalization(pd_data: pd.DataFrame) -> pd.DataFrame:
                                  "attacktype1": "attacked_type",
                                  "gname": "group_name", "gname2": "group_name2", "nperps": "num_terrorists",
                                  "natlty1_txt": "target_nationality"}),
+        lambda df: df.applymap(convert_unknown_to_none),
         delete_none,
-        replace_invalid_values
+        delete_unknown_and_none,
     )
